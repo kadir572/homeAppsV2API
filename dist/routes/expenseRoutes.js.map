@@ -1,0 +1,1 @@
+{"version":3,"file":"expenseRoutes.js","sourceRoot":"","sources":["../../src/routes/expenseRoutes.ts"],"names":[],"mappings":";;;;;AAAA,sDAA6B;AAC7B,oDAAoD;AAEpD,gBAAgB;AAChB,MAAM,MAAM,GAAG,iBAAO,CAAC,MAAM,EAAE,CAAA;AAE/B,MAAM,CAAC,KAAK,CAAC,GAAG,CAAC,CAAC,GAAG,EAAE,CAAC,IAAI,EAAE,CAAC,KAAK,EAAE,CAAC,MAAM,EAAE,CAAA;AAE/C,kBAAe,MAAM,CAAA"}
