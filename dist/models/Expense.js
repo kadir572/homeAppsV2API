@@ -54,8 +54,14 @@ const ExpenseSchema = new mongoose_1.Schema({
                 type: Number,
                 required: true,
             },
+            paid: {
+                type: Boolean,
+                default: false,
+            },
         },
     ],
+}, {
+    timestamps: true,
 });
 exports.Expense = mongoose_1.default.model('Expense', ExpenseSchema);
 //# sourceMappingURL=Expense.js.map

@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 import { User } from '../models/User'
 import mongoose from 'mongoose'
-import errorMesages from '../constants/errorMessages'
+import errorMessages from '../constants/errorMessages'
 
 // @desc Get all users
 // @route GET /user
@@ -10,7 +10,8 @@ import errorMesages from '../constants/errorMessages'
 export const getAllUsers = async (req: Request, res: Response) => {
   const users = await User.find().select('-password').lean()
 
-  if (!users?.length) return res.status(400).json({ message: 'No users found' })
+  if (!users?.length)
+    return res.status(400).json({ message: errorMessages.user.notFound })
 
   const usersToSend = users.map(user => {
     return {
@@ -32,7 +33,7 @@ export const createNewUser = async (req: Request, res: Response) => {
 
   // Confirming data
   if (!username || !password)
-    return res.status(400).json({ message: errorMesages.allFieldsReq })
+    return res.status(400).json({ message: errorMessages.user.allFieldsReq })
 
   // Check for duplicate
   const duplicate = await User.findOne({ username })
@@ -41,7 +42,9 @@ export const createNewUser = async (req: Request, res: Response) => {
     .exec()
 
   if (duplicate)
-    return res.status(409).json({ message: errorMesages.duplicateUsername })
+    return res
+      .status(409)
+      .json({ message: errorMessages.user.duplicateUsername })
 
   // Hash password
   const hashedPwd = await bcrypt.hash(password, 10)
@@ -58,7 +61,7 @@ export const createNewUser = async (req: Request, res: Response) => {
     res.status(201).json({ message: `New user ${username} created` })
     console.log(user)
   } else {
-    res.status(400).json({ message: errorMesages.invalidUserData })
+    res.status(400).json({ message: errorMessages.user.invalidUserData })
   }
 }
 
@@ -70,15 +73,16 @@ export const updateUser = async (req: Request, res: Response) => {
 
   // Confirm data
   if (!id || !username || !role || typeof active !== 'boolean') {
-    return res.status(400).json({ message: errorMesages.allFieldsReq })
+    return res.status(400).json({ message: errorMessages.user.allFieldsReq })
   }
 
   if (!mongoose.Types.ObjectId.isValid(id))
-    return res.status(400).json({ message: errorMesages.userNotFound })
+    return res.status(400).json({ message: errorMessages.user.notFound })
 
   const user = await User.findById(id).exec()
 
-  if (!user) return res.status(400).json({ message: errorMesages.userNotFound })
+  if (!user)
+    return res.status(400).json({ message: errorMessages.user.notFound })
 
   // Check for duplicate
   const duplicate = await User.findOne({ username })
@@ -88,7 +92,9 @@ export const updateUser = async (req: Request, res: Response) => {
 
   // Allow updates to the original user
   if (duplicate && duplicate?._id.toString() !== id) {
-    return res.status(409).json({ message: errorMesages.duplicateUsername })
+    return res
+      .status(409)
+      .json({ message: errorMessages.user.duplicateUsername })
   }
 
   user.username = username
@@ -110,11 +116,13 @@ export const updateUser = async (req: Request, res: Response) => {
 export const deleteUser = async (req: Request, res: Response) => {
   const { id } = req.body
 
-  if (!id) return res.status(400).json({ message: errorMesages.idRequired })
+  if (!id)
+    return res.status(400).json({ message: errorMessages.user.idRequired })
 
   const user = await User.findById(id).exec()
 
-  if (!user) return res.status(400).json({ message: errorMesages.userNotFound })
+  if (!user)
+    return res.status(400).json({ message: errorMessages.user.notFound })
 
   const result = await user.deleteOne()
 

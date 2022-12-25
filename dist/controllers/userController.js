@@ -23,7 +23,7 @@ const errorMessages_1 = __importDefault(require("../constants/errorMessages"));
 const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const users = yield User_1.User.find().select('-password').lean();
     if (!(users === null || users === void 0 ? void 0 : users.length))
-        return res.status(400).json({ message: 'No users found' });
+        return res.status(400).json({ message: errorMessages_1.default.user.notFound });
     const usersToSend = users.map(user => {
         return {
             id: user._id,
@@ -42,14 +42,16 @@ const createNewUser = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     const { username, password, role } = req.body;
     // Confirming data
     if (!username || !password)
-        return res.status(400).json({ message: errorMessages_1.default.allFieldsReq });
+        return res.status(400).json({ message: errorMessages_1.default.user.allFieldsReq });
     // Check for duplicate
     const duplicate = yield User_1.User.findOne({ username })
         .collation({ locale: 'en', strength: 2 })
         .lean()
         .exec();
     if (duplicate)
-        return res.status(409).json({ message: errorMessages_1.default.duplicateUsername });
+        return res
+            .status(409)
+            .json({ message: errorMessages_1.default.user.duplicateUsername });
     // Hash password
     const hashedPwd = yield bcrypt_1.default.hash(password, 10);
     const userObject = role !== 'admin' && role !== 'operator'
@@ -62,7 +64,7 @@ const createNewUser = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         console.log(user);
     }
     else {
-        res.status(400).json({ message: errorMessages_1.default.invalidUserData });
+        res.status(400).json({ message: errorMessages_1.default.user.invalidUserData });
     }
 });
 exports.createNewUser = createNewUser;
@@ -73,13 +75,13 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     const { id, username, role, active, password } = req.body;
     // Confirm data
     if (!id || !username || !role || typeof active !== 'boolean') {
-        return res.status(400).json({ message: errorMessages_1.default.allFieldsReq });
+        return res.status(400).json({ message: errorMessages_1.default.user.allFieldsReq });
     }
     if (!mongoose_1.default.Types.ObjectId.isValid(id))
-        return res.status(400).json({ message: errorMessages_1.default.userNotFound });
+        return res.status(400).json({ message: errorMessages_1.default.user.notFound });
     const user = yield User_1.User.findById(id).exec();
     if (!user)
-        return res.status(400).json({ message: errorMessages_1.default.userNotFound });
+        return res.status(400).json({ message: errorMessages_1.default.user.notFound });
     // Check for duplicate
     const duplicate = yield User_1.User.findOne({ username })
         .collation({ locale: 'en', strength: 2 })
@@ -87,7 +89,9 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         .exec();
     // Allow updates to the original user
     if (duplicate && (duplicate === null || duplicate === void 0 ? void 0 : duplicate._id.toString()) !== id) {
-        return res.status(409).json({ message: errorMessages_1.default.duplicateUsername });
+        return res
+            .status(409)
+            .json({ message: errorMessages_1.default.user.duplicateUsername });
     }
     user.username = username;
     user.role = role;
@@ -105,10 +109,10 @@ exports.updateUser = updateUser;
 const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.body;
     if (!id)
-        return res.status(400).json({ message: errorMessages_1.default.idRequired });
+        return res.status(400).json({ message: errorMessages_1.default.user.idRequired });
     const user = yield User_1.User.findById(id).exec();
     if (!user)
-        return res.status(400).json({ message: errorMessages_1.default.userNotFound });
+        return res.status(400).json({ message: errorMessages_1.default.user.notFound });
     const result = yield user.deleteOne();
     res.json({ message: `User ${result.username} with Id ${result.id} deleted` });
 });
